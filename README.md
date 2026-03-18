@@ -1,83 +1,74 @@
-# 🏗 Scaffold-ETH 2
+# 🎯 IntentTip V1 — On-Chain Bounty Tipping Protocol
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+Deposit CLAWD tips with verifiable criteria. An oracle resolves the winner and pushes payout. 4.5% burn + 0.5% creator fee on every successful tip. 30-day refund guarantee.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+## Live Contract
 
-> [!NOTE]
-> 🤖 Scaffold-ETH 2 is AI-ready! It has everything agents need to build on Ethereum. Check `.agents/`, `.claude/`, `.opencode` or `.cursor/` for more info.
+- **TipJar:** [`0x13f6Bae029A90756fA9236079853382B2050D623`](https://basescan.org/address/0x13f6Bae029A90756fA9236079853382B2050D623) on Base
+- **CLAWD Token:** [`0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07`](https://basescan.org/address/0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07) on Base
+- **Admin/Oracle Admin:** `0xC99F74bC7c065d8c51BD724Da898d44F775a8a19` (client multisig)
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+## How It Works
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+1. **Create Tip:** Deposit CLAWD with criteria (e.g., "tip whoever burned the most CLAWD this month")
+2. **Oracle Resolves:** Oracle script evaluates criteria and calls `resolveTipPush()` with the winner
+3. **Payout:** 95% to winner, 4.5% burned 🔥, 0.5% to creator
+4. **Safety:** Tipper can reject matches (1 free rejection, 2nd = auto-refund) or reclaim after 30 days (full refund, no fees)
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+## Fee Structure
 
-## Requirements
+| Recipient | Percentage |
+|-----------|-----------|
+| Winner | 95% |
+| Burn 🔥 | 4.5% |
+| Creator | 0.5% |
 
-Before you begin, you need to install the following tools:
+## Architecture
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+- **Smart Contract:** `TipJar.sol` — Solidity ^0.8.20, OpenZeppelin AccessControl + ReentrancyGuard + SafeERC20
+- **Frontend:** Scaffold-ETH 2 (Next.js) — Live feed, tip creation, management dashboard
+- **Oracle:** Node.js skeleton — polls events, placeholder resolution logic
 
-## Quickstart
+## Development
 
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install dependencies if it was skipped in CLI:
-
-```
-cd my-dapp-example
+```bash
+# Install
 yarn install
+
+# Run local
+yarn chain    # start local chain
+yarn deploy   # deploy contract
+yarn start    # start frontend
+
+# Test
+cd packages/foundry && forge test
 ```
 
-2. Run a local network in the first terminal:
+## Security
 
+- All config immutable (no admin can change fees/addresses)
+- No pause, no upgradeability — passes Walkaway Test
+- ReentrancyGuard + CEI on all fund-moving functions
+- SafeERC20 for all CLAWD transfers
+- Fee-on-transfer safe (measures balance delta)
+- 4 audit issues filed (all Low severity, all addressed)
+
+## Oracle Setup
+
+The oracle hot wallet needs ORACLE_ROLE granted by the admin:
+
+```bash
+# Admin grants oracle role
+cast send 0x13f6Bae029A90756fA9236079853382B2050D623 \
+  "grantRole(bytes32,address)" \
+  0x68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1 \
+  <ORACLE_WALLET_ADDRESS> \
+  --private-key <ADMIN_KEY> \
+  --rpc-url https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
 ```
-yarn chain
-```
 
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
+## Environment Variables
 
-3. On a second terminal, deploy the test contract:
+See `.env.example` for required environment variables.
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
-```
-
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn foundry:test`
-
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+## Built by CLAWD Bot for LeftClaw Services — Job #10
