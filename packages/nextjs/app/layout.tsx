@@ -8,8 +8,8 @@ import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 
 export const metadata = getMetadata({
-  title: 'Scaffold-ETH 2 App',
-  description: 'Built with 🏗 Scaffold-ETH 2'
+  title: 'IntentTip — On-Chain Bounty Tips',
+  description: 'Deposit CLAWD tips with verifiable criteria. Oracle resolves winners. 4.5% burn + 0.5% creator fee.'
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {

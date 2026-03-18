@@ -21,3 +21,9 @@ node_modules
 
 # cli
 dist
+
+.env
+.env.*
+*.key
+broadcast/
+cache/
