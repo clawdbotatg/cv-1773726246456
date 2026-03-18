@@ -1,12 +1,13 @@
 "use client";
 
 import { formatEther } from "viem";
-import { useScaffoldEventHistory, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldEventHistory, useScaffoldReadContract, useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { useClawdPrice } from "~~/hooks/useClawdPrice";
 import { Address } from "~~/components/scaffold-eth";
 
 export default function Home() {
   const clawdPrice = useClawdPrice();
+  const { data: tipJarInfo } = useDeployedContractInfo("TipJar");
 
   const { data: nextTipId } = useScaffoldReadContract({
     contractName: "TipJar",
@@ -104,7 +105,7 @@ export default function Home() {
       {/* Contract Address */}
       <div className="text-center mt-8 text-sm opacity-70">
         <p>TipJar Contract:</p>
-        <Address address={undefined} />
+        <Address address={tipJarInfo?.address} />
       </div>
     </div>
   );
