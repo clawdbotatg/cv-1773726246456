@@ -67,6 +67,8 @@ contract TipJar is AccessControl, ReentrancyGuard {
     error ZeroAmount();
 
     // ─── Constructor ─────────────────────────────────────────────
+    error ZeroAddress();
+
     constructor(
         address _clawdToken,
         address _burnAddress,
@@ -76,6 +78,12 @@ contract TipJar is AccessControl, ReentrancyGuard {
         address _admin,
         address _oracle
     ) {
+        if (_clawdToken == address(0)) revert ZeroAddress();
+        if (_burnAddress == address(0)) revert ZeroAddress();
+        if (_creatorWallet == address(0)) revert ZeroAddress();
+        if (_admin == address(0)) revert ZeroAddress();
+        if (_oracle == address(0)) revert ZeroAddress();
+
         clawdToken = IERC20(_clawdToken);
         burnAddress = _burnAddress;
         creatorWallet = _creatorWallet;
@@ -198,9 +206,9 @@ contract TipJar is AccessControl, ReentrancyGuard {
         uint256 burnAmount = (amount * BURN_BPS) / BPS_DENOMINATOR;
         uint256 creatorAmount = amount - winnerAmount - burnAmount; // absorbs dust
 
-        clawdToken.safeTransfer(recipient, winnerAmount);
-        clawdToken.safeTransfer(burnAddress, burnAmount);
-        clawdToken.safeTransfer(creatorWallet, creatorAmount);
+        if (winnerAmount > 0) clawdToken.safeTransfer(recipient, winnerAmount);
+        if (burnAmount > 0) clawdToken.safeTransfer(burnAddress, burnAmount);
+        if (creatorAmount > 0) clawdToken.safeTransfer(creatorWallet, creatorAmount);
 
         emit TipReleased(tipId, recipient, winnerAmount, burnAmount, creatorAmount);
     }

@@ -187,6 +187,11 @@ contract TipJarTest is Test {
         assertEq(w + b + c, 999e18); // no dust lost
     }
 
+    function test_constructor_zeroAddress() public {
+        vm.expectRevert(TipJar.ZeroAddress.selector);
+        new TipJar(address(0), burn, creator, 1e18, 1_000_000e18, admin, oracle);
+    }
+
     function test_zeroRecipient() public {
         vm.prank(tipper);
         tipJar.createTip(1000e18, TipJar.Mode.AutoSend, keccak256("test"));
